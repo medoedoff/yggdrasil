@@ -1,4 +1,4 @@
-import os
+import logging
 
 from flask import Flask
 from flask import jsonify
@@ -9,6 +9,13 @@ from libs.common import check_dir_existence, check_file_existence
 errors = [404, 406, 403]
 
 app = Flask(__name__)
+
+logger = logging.getLogger('gunicorn.error')
+logfile = "/var/log/tds/cargo-mirror/cargo-mirror.log"
+handler = logging.FileHandler(logfile)
+fmtr = logging.Formatter('%(asctime)s - %(message)s', datefmt='[%Y-%b-%d %H:%M]')
+handler.setFormatter(fmtr)
+logger.addHandler(handler)
 
 
 @app.route('/', defaults={'path': ''})

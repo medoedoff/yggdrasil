@@ -31,7 +31,7 @@ def check_file_existence(file):
     """
     base_path = 'packages/{}'.format(file)
     base_url = 'https://crates.io/api/v1/crates/{}'.format(file)
-    if os.path.isfile(file) is False:
+    if os.path.isfile(base_path) is False:
         response = requests.get(base_url)
         try:
             with open(base_path, 'wb') as file:

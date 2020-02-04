@@ -1,0 +1,23 @@
+post_install(){
+    LOGDIR_PATH=/var/log/cargo-mirror
+    PACKAGE_PATH=/opt/tds/cargo-mirror
+    USER=root
+    virtualenv -p python3 $PACKAGE_PATH/venv
+    ${PACKAGE_PATH}/venv/bin/pip install --no-deps ${PACKAGE_PATH}/dependencies/*
+    chown nginx:$USER -R ${LOGDIR_PATH}
+}
+
+post_upgrade(){
+    LOGDIR_PATH=/var/log/cargo-mirror
+    PACKAGE_PATH=/opt/tds/cargo-mirror
+    USER=root
+    rm -rf $PACKAGE_PATH/venv
+    virtualenv -p python3 $PACKAGE_PATH/venv
+    ${PACKAGE_PATH}/venv/bin/pip install --no-deps ${PACKAGE_PATH}/dependencies/*
+    chown nginx:$USER -R ${LOGDIR_PATH}
+}
+
+post_remove(){
+    PACKAGE_PATH=/opt/tds/cargo-mirror/
+    find $PACKAGE_PATH -not -name "packages" -delete
+}

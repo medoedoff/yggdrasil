@@ -1,0 +1,25 @@
+include:
+  - "http://download.repo.tds/ci/templates-build.yml"
+  - "http://download.repo.tds/ci/templates-upload.yml"
+  - "http://download.repo.tds/ci/templates-servers-task.yml"
+
+stages:
+  - build
+  - publish
+
+build-arch:
+  extends: .build_dev_python_arch
+  stage: build
+  variables:
+    IMAGE_PATH: "archlinux:generic-python-builder"
+  allow_failure: true
+
+publish-arch:
+  extends: .publish_dev_arch_pkg
+  stage: publish
+  script:
+    - curl -f -X POST -F "package=@`ls build/arch/*.pkg.tar.xz`" "http://mandragora-${REPO_ENV}.repo.tds/custom/upload?res_deps="
+  variables:
+    REPO_ENV: dev
+  dependencies:
+    - build-arch

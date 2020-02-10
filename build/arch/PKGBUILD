@@ -1,8 +1,8 @@
 # Maintainer: Your Name <almahan@group-ib.com>
-pkgname=cargo-mirror
+pkgname=teldrassil
 pkgver=0.0.1
 pkgrel=1
-pkgdesc="Cargo cache mirror server"
+pkgdesc="teldrassil cache mirror server"
 arch=('x86_64')
 depends=('python-virtualenv' 'python')
 makedepends=('make' 'gcc' 'python-pip' 'python' 'python-wheel' 'python-virtualenv')
@@ -20,8 +20,8 @@ build() {
 
 package() {
 	local source=../../..
-	local maindir="$pkgdir/opt/tds/cargo-mirror"
-	local logdir="$pkgdir/var/log/cargo-mirror"
+	local maindir="$pkgdir/opt/tds/teldrassil"
+	local logdir="$pkgdir/var/log/teldrassil"
 	mkdir -p $maindir/{dependencies,venv} $logdir
 	cp -r *.whl $maindir/dependencies/
 	find $source -mindepth 1 -maxdepth 1 -not -path "$source/build" -not -path "$source/.git" \

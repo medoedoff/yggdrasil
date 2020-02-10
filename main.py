@@ -11,7 +11,7 @@ errors = [404, 406, 403]
 app = Flask(__name__)
 
 logger = logging.getLogger('gunicorn.error')
-logfile = "/var/log/tds/cargo-mirror/cargo-mirror.log"
+logfile = "/var/log/teldrassil/teldrassil-api.log"
 handler = logging.FileHandler(logfile)
 fmtr = logging.Formatter('%(asctime)s - %(message)s', datefmt='[%Y-%b-%d %H:%M]')
 handler.setFormatter(fmtr)
@@ -36,6 +36,11 @@ def proxy(path):
         return jsonify(error_message=message), status_code
 
     return send_file(base_package_path)
+
+
+@app.route('/check')
+def health_check():
+    return jsonify(status='ok')
 
 
 if __name__ == '__main__':

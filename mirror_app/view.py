@@ -21,13 +21,12 @@ def mirror(path):
     except ValueError:
         return jsonify(error='Incorrect request'), error_status
 
-    base_path = f'packages/{path}'
     base_url = f'https://crates.io/api/v1/crates/{path}'
 
     try:
         check_package_dir_existence(base_dir_path)
-        check_package_existence(base_path, base_url)
-    except (PermissionError, OSError, IOError) as e:
+        check_package_existence(base_package_path, base_url)
+    except (PermissionError, OSError, IOError, FileNotFoundError) as e:
         return jsonify(error=f'Some error occurred: {e}'), error_status
 
     return send_file(base_package_path)

@@ -1,13 +1,13 @@
-import os
+import json
 
 from flask import jsonify, Blueprint, request
 from libs.common import check_package_dir_existence
+from libs.repository import Index, SavePackage
 
 upload_package_blueprint = Blueprint('upload_package', __name__)
-error_status = 406
 
-UPLOAD_DIRECTORY = "upload"
-check_package_dir_existence(UPLOAD_DIRECTORY)
+conflict_status = 409
+success_status = 200
 
 
 @upload_package_blueprint.route('/api/v1/crates/new', methods=['PUT'])
@@ -20,6 +20,27 @@ def upload():
     < source tarball >
     """
     data = request.data
+    index_path = '/var/lib/teldrassil/crates.io-tds-index'
     json_bytes = data[4:int.from_bytes(data[0:4], "little") + 4]  # get json bytes information about package
+    tar_bytes = data[int.from_bytes(data[0:4], "little") + 8:]  # get data bytes of package
+    package_info = json.loads(json_bytes)
 
-    return jsonify(data=data)
+    # with open('/var/lib/teldrassil/crates.io-tds-index/ma/il/mailin', 'w') as file:
+    #     file.write(package_info)
+
+    package_name = package_info['name']
+    package_version = package_info['vers']
+    package_path = f'packages/{package_name}/{package_version}/download'
+    package_dir = f'packages/{package_name}/{package_version}'
+
+    index = Index(index_path=index_path, package_info=package_info, package_name=package_name)
+    package = SavePackage(path_to_save=package_path, package_data=tar_bytes)
+
+    status = index.synchronise()
+    if status == success_status:
+        check_package_dir_existence(package_dir)
+        package.save()
+        return jsonify(message='Success!'), success_status
+    elif status == conflict_status:
+        return jsonify(message='Package current version already exists!'), conflict_status
+    return jsonify(message='OK'), 200

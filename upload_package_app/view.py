@@ -1,8 +1,10 @@
 import json
 
+from hashlib import sha256
+
 from flask import jsonify, Blueprint, request
 from libs.common import check_package_dir_existence
-from libs.repository import Index, SavePackage
+from libs.repository import Index, SavePackage, ReformatPackageJson
 
 upload_package_blueprint = Blueprint('upload_package', __name__)
 
@@ -20,13 +22,14 @@ def upload():
     < source tarball >
     """
     data = request.data
-    index_path = '/var/lib/teldrassil/crates.io-tds-index'
+    index_path = '/opt/tds/crates.io-index'
     json_bytes = data[4:int.from_bytes(data[0:4], "little") + 4]  # get json bytes information about package
     tar_bytes = data[int.from_bytes(data[0:4], "little") + 8:]  # get data bytes of package
-    package_info = json.loads(json_bytes)
+    package_hash = sha256(tar_bytes).hexdigest()
+    package_metadata = json.loads(json_bytes)
 
-    # with open('/var/lib/teldrassil/crates.io-tds-index/ma/il/mailin', 'w') as file:
-    #     file.write(package_info)
+    reformat_package_metadata = ReformatPackageJson(package_metadata=package_metadata, package_hash=package_hash)
+    package_info = reformat_package_metadata.reformat()
 
     package_name = package_info['name']
     package_version = package_info['vers']
@@ -43,4 +46,3 @@ def upload():
         return jsonify(message='Success!'), success_status
     elif status == conflict_status:
         return jsonify(message='Package current version already exists!'), conflict_status
-    return jsonify(message='OK'), 200

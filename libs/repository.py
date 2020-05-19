@@ -73,6 +73,65 @@ class Index:
             return success_status
 
 
+class ReformatPackageJson:
+    """
+    Reformatting package meta information to correct view for indexes
+    """
+
+    def __init__(self, package_metadata, package_hash):
+        self.package_metadata = package_metadata
+        self.package_hash = package_hash
+
+    def _reformat_deps(self):
+        package_metadata = self.package_metadata
+        list_of_deps = list()
+        package_dependency_structure = {
+            'name': str(),
+            'req': str(),
+            'features': list(),
+            'optional': bool(),
+            'default_features': bool(),
+            'target': str(),
+            'kind': str()
+        }
+
+        for obj in package_metadata['deps']:
+            for key, value in obj.items():
+                if key in package_dependency_structure:
+                    package_dependency_structure[key] = value
+                if key == 'version_req':
+                    package_dependency_structure['req'] = value
+            list_of_deps.append(package_dependency_structure.copy())
+
+        return list_of_deps
+
+    def reformat(self):
+        package_metadata = self.package_metadata
+        package_hash = self.package_hash
+
+        package_structure = {
+            'name': str(),
+            'vers': str(),
+            'deps': list(),
+            'features': dict(),
+            'cksum': str(),
+            'yanked': False,
+            'links': str()
+        }
+
+        for key, value in package_metadata.items():
+            if key in package_structure:
+                package_structure[key] = value
+
+        package_structure['cksum'] = package_hash
+
+        if len(package_metadata['deps']) > 0:
+            deps = self._reformat_deps()
+            package_structure['deps'] = deps
+
+        return package_structure
+
+
 class SavePackage:
     def __init__(self, path_to_save, package_data):
         self.path_to_save = path_to_save

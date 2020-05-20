@@ -1,5 +1,6 @@
 import os
 import json
+import string
 
 conflict_status = 409
 success_status = 200
@@ -35,15 +36,21 @@ class Index:
 
     def _create(self, path_to_save_package_info):
         package_info = self.package_info
+        package_info = json.dumps(package_info)
+        # Remove all whitespaces
+        package_info = package_info.translate({ord(package_info): None for package_info in string.whitespace})
         with open(path_to_save_package_info, 'w') as json_file:
-            json.dump(package_info, json_file)
-            # json_file.write('\n')
+            json_file.write(package_info)
+            json_file.write('\n')
         return
 
     def _update(self, path_to_save_package_info):
         package_info = self.package_info
+        package_info = json.dumps(package_info)
+        # Remove all whitespaces
+        package_info = package_info.translate({ord(package_info): None for package_info in string.whitespace})
         with open(path_to_save_package_info, 'a') as json_file:
-            json.dump(package_info, json_file)
+            json_file.write(package_info)
             json_file.write('\n')
         return
 

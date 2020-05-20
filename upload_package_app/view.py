@@ -10,6 +10,16 @@ upload_package_blueprint = Blueprint('upload_package', __name__)
 
 conflict_status = 409
 success_status = 200
+bad_request = 400
+
+error_statuses = {
+    conflict_status: 'package current version already exists',
+    bad_request: 'invalid package name'
+}
+
+success_statuses = {
+    success_status: 'ok'
+}
 
 
 @upload_package_blueprint.route('/api/v1/crates/new', methods=['PUT'])
@@ -40,9 +50,9 @@ def upload():
     package = SavePackage(path_to_save=package_path, package_data=tar_bytes)
 
     status = index.synchronise()
-    if status == success_status:
+    if status in success_statuses:
         check_package_dir_existence(package_dir)
         package.save()
-        return jsonify(message='Success!'), success_status
-    elif status == conflict_status:
-        return jsonify(message='Package current version already exists!'), conflict_status
+        return jsonify(message=success_statuses[success_status]), status
+    elif status in error_statuses:
+        return jsonify(message=error_statuses[status]), status

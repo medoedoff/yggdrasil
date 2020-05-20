@@ -32,11 +32,13 @@ class Index:
         rules = [
             lambda package_name: package_name[0].isdigit(),  # is string starts with number
             lambda package_name: any(c.isupper() for c in package_name),  # is string has uppercase characters
-            lambda package_name: all(ord(c) > standard_7bit_of_ascii for c in self.package_name),  # is not ascii
+            lambda package_name: all(ord(c) > standard_7bit_of_ascii for c in package_name),  # is not ascii
             lambda package_name: len(package_name) > 64  # is string above 64 characters
         ]
 
-        if all(rule(self.package_name) for rule in rules):
+        check_rules = any(rule(self.package_name) for rule in rules)
+
+        if check_rules:
             error = bad_request_status
             return error
 

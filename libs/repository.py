@@ -2,6 +2,8 @@ import os
 import json
 import string
 
+from git import Repo
+
 conflict_status = 409
 success_status = 200
 bad_request_status = 400
@@ -11,12 +13,15 @@ class Index:
     def __init__(self, package_name, package_info, index_path):
         """
         :param package_name: str package name
-        :param index_path: str path to index directory
+        :param index_path: str path to index git directory
         :param package_info: json information about package
         """
         self.package_name = package_name
         self.index_path = index_path
         self.package_info = package_info
+        self.repo = Repo(index_path)
+        self.package_version = self.package_info['vers']
+        self.commit_message = f'Updating crate `{package_name}#{self.package_version}`'
 
     def _package_name_validation(self):
         """
@@ -67,6 +72,9 @@ class Index:
         with open(path_to_save_package_info, 'w') as json_file:
             json_file.write(package_info)
             json_file.write('\n')
+        self.repo.git.add(path_to_save_package_info)
+        self.repo.git.commit(m=self.commit_message)
+        self.repo.git.push()
         return
 
     def _update(self, path_to_save_package_info):
@@ -76,6 +84,9 @@ class Index:
         with open(path_to_save_package_info, 'a') as json_file:
             json_file.write(package_info)
             json_file.write('\n')
+        self.repo.git.add(path_to_save_package_info)
+        self.repo.git.commit(m=self.commit_message)
+        self.repo.git.push()
         return
 
     def synchronise(self):

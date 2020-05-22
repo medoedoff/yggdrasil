@@ -32,7 +32,7 @@ def upload():
     < source tarball >
     """
     data = request.data
-    index_path = '/opt/tds/crates.io-index'
+    git_index_path = '/var/lib/teldrassil/crates.io-tds-index'
     json_bytes = data[4:int.from_bytes(data[0:4], "little") + 4]  # get json bytes information about package
     tar_bytes = data[int.from_bytes(data[0:4], "little") + 8:]  # get data bytes of package
     package_hash = sha256(tar_bytes).hexdigest()
@@ -46,7 +46,7 @@ def upload():
     package_path = f'packages/{package_name}/{package_version}/download'
     package_dir = f'packages/{package_name}/{package_version}'
 
-    index = Index(index_path=index_path, package_info=package_info, package_name=package_name)
+    index = Index(index_path=git_index_path, package_info=package_info, package_name=package_name)
     package = SavePackage(path_to_save=package_path, package_data=tar_bytes)
 
     status = index.synchronise()

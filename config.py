@@ -5,7 +5,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     DEBUG = False
-    # SECRET_KEY = 'dont forget put the key'
+    SECRET_KEY = 'aRWBT32SRy4w*&sV'
     FLASK_ADMIN_SWATCH = 'cyborg'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

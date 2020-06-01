@@ -1,6 +1,8 @@
 import datetime
-from app import db
+from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
+
+db = SQLAlchemy()
 
 
 class BaseModel(db.Model):

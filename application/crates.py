@@ -1,16 +1,17 @@
 import json
 
 from hashlib import sha256
-
-from flask import jsonify, Blueprint, request
-from libs.common import check_package_dir_existence
+from flask import jsonify, send_file, Blueprint, request
+from libs.common import check_package_dir_existence, check_package_existence
 from libs.repository import Index, SavePackage, ReformatPackageJson
 
+mirror_blueprint = Blueprint('mirror', __name__)
 upload_package_blueprint = Blueprint('upload_package', __name__)
 
 conflict_status = 409
 success_status = 200
 bad_request = 400
+error_status = 406
 
 error_statuses = {
     conflict_status: 'package current version already exists',
@@ -22,6 +23,35 @@ success_statuses = {
 }
 
 
+# Cashing packages from upstream
+@mirror_blueprint.route('/', defaults={'path': ''})
+@mirror_blueprint.route('/<path:path>')
+def mirror(path):
+    """
+    :param path: take from request url path to package
+    :return: package if ok or error
+    """
+    try:
+        base_dir_path = list(path.rsplit('/', 1))
+        base_dir_path.remove('download')
+        base_dir_path = ' '.join(map(str, base_dir_path))
+        base_dir_path = f'packages/{base_dir_path}'
+        base_package_path = f'packages/{path}'
+    except ValueError:
+        return jsonify(error='Incorrect request'), error_status
+
+    base_url = f'https://crates.io/api/v1/crates/{path}'
+
+    try:
+        check_package_dir_existence(base_dir_path)
+        check_package_existence(base_package_path, base_url)
+    except (PermissionError, OSError, IOError, FileNotFoundError) as e:
+        return jsonify(error=f'Some error occurred: {e}'), error_status
+
+    return send_file(base_package_path)
+
+
+# Upload private packages
 @upload_package_blueprint.route('/api/v1/crates/new', methods=['PUT'])
 def upload():
     """

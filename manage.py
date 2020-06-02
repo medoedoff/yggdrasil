@@ -1,4 +1,3 @@
-import os
 import sys
 import re
 
@@ -7,11 +6,10 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_security import SQLAlchemyUserDatastore, Security
 from flask_security.utils import hash_password
 
-from users_app.models import *
+from application.models import db, Users, Roles
+from application import create_app
 
-from app import app, db
-
-app.config.from_object(os.getenv('APP_SETTINGS'))
+app = create_app()
 
 migrate = Migrate(app, db)
 manager = Manager(app)

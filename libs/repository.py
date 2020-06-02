@@ -3,10 +3,7 @@ import json
 import string
 
 from git import Repo
-
-conflict_status = 409
-success_status = 200
-bad_request_status = 400
+from http import HTTPStatus
 
 
 class Index:
@@ -44,7 +41,7 @@ class Index:
         check_rules = any(rule(self.package_name) for rule in rules)
 
         if check_rules:
-            error = bad_request_status
+            error = HTTPStatus.BAD_REQUEST.value
             return error
 
         return error
@@ -108,15 +105,15 @@ class Index:
         if os.path.isfile(path_to_save_package_info) is False:
             os.makedirs(package_index_path)
             self._create(path_to_save_package_info)
-            return success_status
+            return HTTPStatus.OK.value
         else:
             with open(path_to_save_package_info) as file:
                 for line in file.readlines():
                     current_package_info = json.loads(line)
                     if current_package_info['vers'] == self.package_info['vers']:
-                        return conflict_status
+                        return HTTPStatus.CONFLICT.value
             self._update(path_to_save_package_info)
-            return success_status
+            return HTTPStatus.OK.value
 
 
 class ReformatPackageJson:

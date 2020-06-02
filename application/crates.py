@@ -1,58 +1,51 @@
 import json
+import os
 
 from hashlib import sha256
 from flask import jsonify, send_file, Blueprint, request
-from libs.common import check_package_dir_existence, check_package_existence
-from libs.repository import Index, SavePackage, ReformatPackageJson
+from libs.common import check_package_dir_existence, check_package_existence, current_application_path
+from libs.repository import Index, SavePackage, ReformatPackageJson, HTTPStatus
 
 mirror_blueprint = Blueprint('mirror', __name__)
 upload_package_blueprint = Blueprint('upload_package', __name__)
 
-conflict_status = 409
-success_status = 200
-bad_request = 400
-error_status = 406
-
 error_statuses = {
-    conflict_status: 'package current version already exists',
-    bad_request: 'invalid package name'
+    HTTPStatus.CONFLICT.value: 'package current version already exists',
+    HTTPStatus.BAD_REQUEST.value: 'invalid package name'
 }
 
 success_statuses = {
-    success_status: 'ok'
+    HTTPStatus.OK.value: 'ok'
 }
 
 
 # Cashing packages from upstream
-@mirror_blueprint.route('/', defaults={'path': ''})
-@mirror_blueprint.route('/<path:path>')
-def mirror(path):
+@mirror_blueprint.route('/<package>/<version>/download')
+def mirror(package, version):
     """
-    :param path: take from request url path to package
+    :param version: str package version
+    :param package: str package name
     :return: package if ok or error
     """
-    try:
-        base_dir_path = list(path.rsplit('/', 1))
-        base_dir_path.remove('download')
-        base_dir_path = ' '.join(map(str, base_dir_path))
-        base_dir_path = f'packages/{base_dir_path}'
-        base_package_path = f'packages/{path}'
-    except ValueError:
-        return jsonify(error='Incorrect request'), error_status
+    package_name = package
+    version = version
 
-    base_url = f'https://crates.io/api/v1/crates/{path}'
+    base_dir_path = f'{current_application_path}/packages/{package_name}/{version}'
+    base_package_path = f'{base_dir_path}/download'
+
+    base_url = f'https://crates.io/api/v1/crates/{package_name}/{version}/download'
 
     try:
         check_package_dir_existence(base_dir_path)
         check_package_existence(base_package_path, base_url)
     except (PermissionError, OSError, IOError, FileNotFoundError) as e:
-        return jsonify(error=f'Some error occurred: {e}'), error_status
+        return jsonify(error=f'Some error occurred: {e}'), HTTPStatus.NOT_ACCEPTABLE.value
 
     return send_file(base_package_path)
 
 
 # Upload private packages
-@upload_package_blueprint.route('/api/v1/crates/new', methods=['PUT'])
+@upload_package_blueprint.route('/new', methods=['PUT'])
 def upload():
     """
     format of data:
@@ -83,6 +76,6 @@ def upload():
     if status in success_statuses:
         check_package_dir_existence(package_dir)
         package.save()
-        return jsonify(message=success_statuses[success_status]), status
+        return jsonify(message=success_statuses[HTTPStatus.OK.value]), status
     elif status in error_statuses:
         return jsonify(message=error_statuses[status]), status

@@ -44,6 +44,9 @@ class Users(BaseModel, UserMixin):
     # Primary Key
     id = db.Column(db.Integer, primary_key=True)
 
+    # Public key
+    public_id = db.Column(db.String(50), unique=True)
+
     # Info
     first_name = db.Column(db.String(length=128))
     last_name = db.Column(db.String(length=128))

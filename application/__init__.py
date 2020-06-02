@@ -4,8 +4,7 @@ from logging.config import fileConfig
 
 from flask import Flask, request
 
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
+from .admin import admin, MyAdminIndexView, MyModelView
 
 from .models import db, Users, Roles
 
@@ -15,9 +14,6 @@ env_path = path.join(path.dirname(path.abspath(__file__)), '../.env')
 fileConfig(log_file_path)
 
 load_dotenv(dotenv_path=env_path)
-
-
-admin = Admin(name='Dashboard')
 
 
 def create_app():
@@ -30,10 +26,10 @@ def create_app():
         app.logger.info('Body: %s', request.get_data())
 
     db.init_app(app)
-    admin.init_app(app)
+    admin.init_app(app, index_view=MyAdminIndexView())
 
-    admin.add_view(ModelView(Users, db.session))
-    admin.add_view(ModelView(Roles, db.session))
+    admin.add_view(MyModelView(Users, db.session))
+    admin.add_view(MyModelView(Roles, db.session))
 
     with app.app_context():
         from .crates import mirror_blueprint, upload_package_blueprint

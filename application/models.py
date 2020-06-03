@@ -1,4 +1,5 @@
 import datetime
+import random
 import jwt
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
@@ -90,6 +91,12 @@ class Users(BaseModel, UserMixin):
 
         payload = jwt.decode(auth_token, getenv('SECRET_KEY'))
         return payload['sub']
+
+    @staticmethod
+    def gen_public_id(length=16):
+        characters_and_digits = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
+        public_id = ''.join(random.sample(characters_and_digits, length))
+        return public_id
 
     def __repr__(self):
         return f'email: {self.email}'

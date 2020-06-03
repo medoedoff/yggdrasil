@@ -2,7 +2,7 @@ from os import getenv
 from logging.config import fileConfig
 from dotenv import load_dotenv
 
-from flask import Flask, request
+from flask import Flask
 from flask_security import SQLAlchemyUserDatastore
 
 from .admin import admin, MyAdminIndexView, MyModelView
@@ -22,11 +22,6 @@ def create_app():
     app.config.from_object(getenv('APP_SETTINGS'))
 
     user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
-
-    @app.before_request
-    def log_request_info():
-        app.logger.info('Headers: %s', request.headers)
-        app.logger.info('Body: %s', request.get_data())
 
     db.init_app(app)
     admin.init_app(app, index_view=MyAdminIndexView())

@@ -1,5 +1,5 @@
 import json
-import os
+import logging
 
 from hashlib import sha256
 from config import Settings
@@ -43,6 +43,13 @@ def mirror(package, version):
         return jsonify(error=f'Some error occurred: {e}'), HTTPStatus.NOT_ACCEPTABLE.value
 
     return send_file(base_package_path)
+
+
+# Logging request info
+@upload_package_blueprint.before_request
+def log_request_info():
+    logging.info('Headers: %s', request.headers)
+    logging.info('Body: %s', request.get_data())
 
 
 # Upload private packages

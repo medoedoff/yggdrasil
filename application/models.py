@@ -1,4 +1,6 @@
 import datetime
+import jwt
+from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
 
@@ -60,6 +62,34 @@ class Users(BaseModel, UserMixin):
     super_user = db.Column(db.Boolean(), default=False)
 
     roles = db.relationship('Roles', secondary=users_roles, backref=db.backref('users', lazy='dynamic'))
+
+    @staticmethod
+    def encode_auth_token(public_id):
+        """
+            Generates the Auth Token
+            :return: string
+        """
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),
+            'iat': datetime.datetime.utcnow(),
+            'sub': public_id
+        }
+        return jwt.encode(
+            payload,
+            getenv('SECRET_KEY'),
+            algorithm='HS256'
+        )
+
+    @staticmethod
+    def decode_auth_token(auth_token):
+        """
+        Decodes the auth token
+        :param auth_token:
+        :return: integer|string
+        """
+
+        payload = jwt.decode(auth_token, getenv('SECRET_KEY'))
+        return payload['sub']
 
     def __repr__(self):
         return f'email: {self.email}'

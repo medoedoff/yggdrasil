@@ -1,9 +1,6 @@
 import os
 import requests
 
-# Flask root path
-current_application_path = os.path.dirname(os.path.abspath('__main__'))
-
 
 def check_package_dir_existence(directory):
     """

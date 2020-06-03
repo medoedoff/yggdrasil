@@ -2,8 +2,9 @@ import json
 import os
 
 from hashlib import sha256
+from config import Settings
 from flask import jsonify, send_file, Blueprint, request
-from libs.common import check_package_dir_existence, check_package_existence, current_application_path
+from libs.common import check_package_dir_existence, check_package_existence
 from libs.repository import Index, SavePackage, ReformatPackageJson, HTTPStatus
 
 mirror_blueprint = Blueprint('mirror', __name__)
@@ -30,7 +31,7 @@ def mirror(package, version):
     package_name = package
     version = version
 
-    base_dir_path = f'{current_application_path}/packages/{package_name}/{version}'
+    base_dir_path = f'{Settings.current_application_path}/packages/{package_name}/{version}'
     base_package_path = f'{base_dir_path}/download'
 
     base_url = f'https://crates.io/api/v1/crates/{package_name}/{version}/download'

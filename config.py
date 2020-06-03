@@ -3,9 +3,15 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
+class Settings:
+    current_application_path = os.path.dirname(os.path.abspath('__main__'))
+    log_file_path = f'{current_application_path}/logging.cfg'
+    env_path = f'{current_application_path}/.env'
+
+
 class Config:
     DEBUG = False
-    SECRET_KEY = 'aRWBT32SRy4w*&sV'
+    SECRET_KEY = os.getenv('SECRET_KEY')
     FLASK_ADMIN_SWATCH = 'united'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

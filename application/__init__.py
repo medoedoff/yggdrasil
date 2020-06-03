@@ -1,6 +1,6 @@
-from os import path, getenv
-from dotenv import load_dotenv
+from os import getenv
 from logging.config import fileConfig
+from dotenv import load_dotenv
 
 from flask import Flask, request
 from flask_security import SQLAlchemyUserDatastore
@@ -10,14 +10,11 @@ from .auth import security
 
 from .models import db, Users, Roles
 
-from libs.common import current_application_path
+from config import Settings
 
-log_file_path = f'{current_application_path}/logging.cfg'
-env_path = f'{current_application_path}/.env'
+fileConfig(Settings.log_file_path)
 
-fileConfig(log_file_path)
-
-load_dotenv(dotenv_path=env_path)
+load_dotenv(dotenv_path=Settings.env_path)
 
 
 def create_app():

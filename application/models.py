@@ -1,9 +1,9 @@
 import datetime
-import random
 import jwt
 from os import getenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
+from .utils import gen_public_id
 
 db = SQLAlchemy()
 
@@ -48,7 +48,7 @@ class Users(BaseModel, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
 
     # Public key
-    public_id = db.Column(db.String(50), unique=True)
+    public_id = db.Column(db.String(50), unique=True, index=True, nullable=False, default=gen_public_id())
 
     # Info
     first_name = db.Column(db.String(length=128))
@@ -59,20 +59,29 @@ class Users(BaseModel, UserMixin):
     password = db.Column(db.String(255))
 
     # User status
-    active = db.Column(db.Boolean(), default=False)
+    active = db.Column(db.Boolean(), default=False, nullable=False)
     super_user = db.Column(db.Boolean(), default=False)
+
+    last_login_at = db.Column(db.DateTime())
+    current_login_at = db.Column(db.DateTime())
+    last_login_ip = db.Column(db.String(100))
+    current_login_ip = db.Column(db.String(100))
+    login_count = db.Column(db.Integer)
 
     roles = db.relationship('Roles', secondary=users_roles, backref=db.backref('users', lazy='dynamic'))
 
     @staticmethod
-    def encode_auth_token(public_id):
+    def encode_auth_token(public_id, exp, iat):
         """
             Generates the Auth Token
+            :param public_id: str 16 generated char and digit
+            :param exp: datetime token expire date
+            :param iat: datetime token creation date
             :return: string
         """
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),
-            'iat': datetime.datetime.utcnow(),
+            'exp': exp,
+            'iat': iat,
             'sub': public_id
         }
         return jwt.encode(
@@ -91,12 +100,6 @@ class Users(BaseModel, UserMixin):
 
         payload = jwt.decode(auth_token, getenv('SECRET_KEY'))
         return payload['sub']
-
-    @staticmethod
-    def gen_public_id(length=16):
-        characters_and_digits = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
-        public_id = ''.join(random.sample(characters_and_digits, length))
-        return public_id
 
     def __repr__(self):
         return f'email: {self.email}'

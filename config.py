@@ -14,6 +14,7 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')
     FLASK_ADMIN_SWATCH = 'united'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECURITY_TRACKABLE = True
 
 
 class ProductionConfig(Config):

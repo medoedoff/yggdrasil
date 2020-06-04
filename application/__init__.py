@@ -3,14 +3,15 @@ from logging.config import fileConfig
 from dotenv import load_dotenv
 
 from flask import Flask
-from flask_security import SQLAlchemyUserDatastore
+from flask_security import SQLAlchemyUserDatastore, Security
 
-from .admin import admin, MyAdminIndexView, MyModelView
-from .auth import security
+from .admin import admin, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet
 
 from .models import db, Users, Roles
 
 from config import Settings
+
+security = Security()
 
 fileConfig(Settings.log_file_path)
 
@@ -24,11 +25,11 @@ def create_app():
     user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 
     db.init_app(app)
-    admin.init_app(app, index_view=MyAdminIndexView())
-    security.init_app(app, user_datastore)
+    admin.init_app(app, index_view=MyAdminIndexViewSet())
+    security.init_app(app, user_datastore, register_blueprint=False)
 
-    admin.add_view(MyModelView(Users, db.session))
-    admin.add_view(MyModelView(Roles, db.session))
+    admin.add_view(UserModelViewSet(Users, db.session))
+    admin.add_view(RoleModelViewSet(Roles, db.session))
 
     with app.app_context():
         from .crates import mirror_blueprint, upload_package_blueprint

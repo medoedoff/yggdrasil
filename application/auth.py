@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Blueprint, request, render_template, jsonify, redirect, url_for, make_response, current_app
+from flask import Blueprint, request, render_template, jsonify, redirect, url_for, make_response
 from flask_security.utils import get_hmac, _pwd_context
 from flask_security import login_user
 
@@ -15,7 +15,8 @@ login_blueprint = Blueprint('login_auth', __name__)
 unauthorized_message = 'Could not verify'
 
 
-def token_required(f):
+# Token check for flask_admin
+def token_required_admin_panel(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth_token = request.cookies.get('auth_token', None)
@@ -30,6 +31,31 @@ def token_required(f):
             return False
 
     return decorated
+
+
+# Token check
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_token = request.cookies.get('auth_token', None)
+        if auth_token is not None:
+            try:
+                public_id = Users.decode_auth_token(auth_token)
+            except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+                return redirect(url_for('login_auth.login_get'))
+            current_user = Users.query.filter_by(public_id=public_id).first()
+            return f(current_user, *args, **kwargs)
+        else:
+            return redirect(url_for('login_auth.login_get'))
+
+    return decorated
+
+
+@login_blueprint.route('/', methods=['GET'])
+@token_required
+def root(current_user):
+    if current_user:
+        return redirect(url_for('admin.index'))
 
 
 @login_blueprint.route('/login', methods=['GET'])

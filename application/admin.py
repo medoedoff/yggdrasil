@@ -4,14 +4,14 @@ from flask_security.utils import hash_password
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for
 
-from .auth import token_required
+from .auth import token_required_admin_panel
 from .utils import password_validation, email_validation
 
 admin = Admin(name='GIB-Teldrassil')
 
 
 class MyAdminIndexViewSet(AdminIndexView):
-    @token_required
+    @token_required_admin_panel
     def is_accessible(self, *args, **kwargs):
         if self.is_active and self.is_authenticated:
             return True
@@ -21,7 +21,7 @@ class MyAdminIndexViewSet(AdminIndexView):
 
 
 class MyModelViewSet(ModelView):
-    @token_required
+    @token_required_admin_panel
     def is_accessible(self, *args, **kwargs):
         if self.is_active and self.is_authenticated:
             if 'admin' in self.roles or self.super_user:

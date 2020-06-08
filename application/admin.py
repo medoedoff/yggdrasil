@@ -18,14 +18,13 @@ class MyAdminIndexViewSet(AdminIndexView):
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('login_auth.login_get'))
-    pass
 
 
 class MyModelViewSet(ModelView):
     @token_required
     def is_accessible(self, *args, **kwargs):
         if self.is_active and self.is_authenticated:
-            if 'admin' in self.roles:
+            if 'admin' in self.roles or self.super_user:
                 return True
 
     def inaccessible_callback(self, name, **kwargs):
@@ -34,7 +33,7 @@ class MyModelViewSet(ModelView):
 
 
 class UserModelViewSet(MyModelViewSet):
-    # column_exclude_list = ('password', 'public_id')
+    column_exclude_list = ('password', 'public_id')
     form_columns = ('email', 'Password', 'Confirm password', 'first_name', 'last_name', 'roles', 'active')
     form_extra_fields = {
         'Password': PasswordField('Password'),

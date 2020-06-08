@@ -1,6 +1,8 @@
 from flask_admin.contrib.sqla import ModelView
 from flask_admin import Admin, AdminIndexView
+from flask_admin.menu import MenuLink
 from flask_security.utils import hash_password
+from flask_security import current_user
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for
 
@@ -13,23 +15,28 @@ admin = Admin(name='GIB-Teldrassil')
 class MyAdminIndexViewSet(AdminIndexView):
     @token_required_admin_panel
     def is_accessible(self, *args, **kwargs):
-        if self.is_active and self.is_authenticated:
+        if current_user.is_authenticated and current_user.is_active:
             return True
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login_auth.login_get'))
+        return redirect(url_for('auth.login_get'))
 
 
 class MyModelViewSet(ModelView):
     @token_required_admin_panel
     def is_accessible(self, *args, **kwargs):
-        if self.is_active and self.is_authenticated:
-            if 'admin' in self.roles or self.super_user:
+        if current_user.is_authenticated and current_user.is_active:
+            if 'admin' in current_user.roles or current_user.super_user:
                 return True
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login_auth.login_get'))
-    pass
+        return redirect(url_for('auth.login_get'))
+
+
+class MyLogoutMenuLink(MenuLink):
+    @token_required_admin_panel
+    def is_accessible(self, *args, **kwargs):
+        return current_user.is_authenticated
 
 
 class UserModelViewSet(MyModelViewSet):

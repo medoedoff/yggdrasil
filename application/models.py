@@ -99,7 +99,7 @@ class Users(BaseModel, UserMixin):
         """
 
         payload = jwt.decode(auth_token, getenv('SECRET_KEY'))
-        return payload['sub']
+        return payload
 
     def __repr__(self):
         return f'email: {self.email}'

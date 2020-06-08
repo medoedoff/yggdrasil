@@ -11,7 +11,7 @@ from .utils import flask_security_datastore_commit
 
 from http import HTTPStatus
 
-login_blueprint = Blueprint('login_auth', __name__)
+auth = Blueprint('auth', __name__)
 unauthorized_message = 'Could not verify'
 
 
@@ -22,8 +22,12 @@ def token_required_admin_panel(f):
         auth_token = request.cookies.get('auth_token', None)
         if auth_token is not None:
             try:
-                public_id = Users.decode_auth_token(auth_token)
+                token_data = Users.decode_auth_token(auth_token)
             except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+                return False
+            public_id = token_data.get('sub', None)
+            blacklist = token_data.get('blacklist', None)
+            if blacklist:
                 return False
             current_user = Users.query.filter_by(public_id=public_id).first()
             return f(current_user, *args, **kwargs)
@@ -41,6 +45,7 @@ def token_required(f):
         if auth_token is not None:
             try:
                 public_id = Users.decode_auth_token(auth_token)
+                public_id = public_id.get('sub', None)
             except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
                 return redirect(url_for('login_auth.login_get'))
             current_user = Users.query.filter_by(public_id=public_id).first()
@@ -51,19 +56,19 @@ def token_required(f):
     return decorated
 
 
-@login_blueprint.route('/', methods=['GET'])
+@auth.route('/', methods=['GET'])
 @token_required
 def root(current_user):
     if current_user:
         return redirect(url_for('admin.index'))
 
 
-@login_blueprint.route('/login', methods=['GET'])
+@auth.route('/login', methods=['GET'])
 def login_get():
     return render_template('login/index.html')
 
 
-@login_blueprint.route('/login', methods=['POST'])
+@auth.route('/login', methods=['POST'])
 def login_post():
     if request.method == 'POST':
         email_form = request.form['email']
@@ -92,3 +97,8 @@ def login_post():
                 return response
         else:
             return jsonify(message=unauthorized_message), HTTPStatus.UNAUTHORIZED.value
+
+
+@auth.route('/logout', methods=['POST'])
+def logout():
+    pass

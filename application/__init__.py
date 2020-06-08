@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_security import SQLAlchemyUserDatastore, Security
 
-from .admin import admin, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet
+from .admin import admin, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet, MyLogoutMenuLink
 
 from .models import db, Users, Roles
 
@@ -30,15 +30,16 @@ def create_app():
 
     admin.add_view(UserModelViewSet(Users, db.session))
     admin.add_view(RoleModelViewSet(Roles, db.session))
+    admin.add_link(MyLogoutMenuLink(name='Logout', category='', url="/logout"))
 
     with app.app_context():
         from .crates import mirror_blueprint, upload_package_blueprint
         from .healthcheck import health_check_blueprint
-        from .auth import login_blueprint
+        from .auth import auth
 
         app.register_blueprint(mirror_blueprint, url_prefix='/api/v1/crates')
         app.register_blueprint(upload_package_blueprint, url_prefix='/api/v1/crates')
         app.register_blueprint(health_check_blueprint)
-        app.register_blueprint(login_blueprint)
+        app.register_blueprint(auth)
 
         return app

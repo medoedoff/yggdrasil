@@ -71,19 +71,11 @@ class Users(BaseModel, UserMixin):
     roles = db.relationship('Roles', secondary=users_roles, backref=db.backref('users', lazy='dynamic'))
 
     @staticmethod
-    def encode_auth_token(public_id, exp, iat):
+    def encode_auth_token(payload):
         """
             Generates the Auth Token
-            :param public_id: str 16 generated char and digit
-            :param exp: datetime token expire date
-            :param iat: datetime token creation date
-            :return: string
+            :param payload: dict token payload
         """
-        payload = {
-            'exp': exp,
-            'iat': iat,
-            'sub': public_id
-        }
         return jwt.encode(
             payload,
             getenv('SECRET_KEY'),

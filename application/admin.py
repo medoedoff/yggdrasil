@@ -6,35 +6,35 @@ from flask_security import current_user
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for
 
-from .auth import token_required_admin_panel
+from .auth import token_required
 from .utils import password_validation, email_validation
 
 admin = Admin(name='GIB-Teldrassil')
 
 
 class MyAdminIndexViewSet(AdminIndexView):
-    @token_required_admin_panel
+    @token_required
     def is_accessible(self, *args, **kwargs):
         if current_user.is_authenticated and current_user.is_active:
             return True
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login_get'))
+        return redirect(url_for('auth.login'))
 
 
 class MyModelViewSet(ModelView):
-    @token_required_admin_panel
+    @token_required
     def is_accessible(self, *args, **kwargs):
         if current_user.is_authenticated and current_user.is_active:
             if 'admin' in current_user.roles or current_user.super_user:
                 return True
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('auth.login_get'))
+        return redirect(url_for('auth.login'))
 
 
 class MyLogoutMenuLink(MenuLink):
-    @token_required_admin_panel
+    @token_required
     def is_accessible(self, *args, **kwargs):
         return current_user.is_authenticated
 

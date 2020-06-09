@@ -35,6 +35,9 @@
         font-size: 15px;
         font-weight: bold;
     }
+    .error{
+        margin: auto;
+    }
 </style>
 </head>
 <body>
@@ -50,8 +53,10 @@
         <div class="form-group">
             <button type="submit" class="btn btn-primary btn-block">Log in</button>
         </div>
-        <div class="clearfix">
-            <label class="pull-left checkbox-inline"><input type="checkbox"> Remember me</label>
+        <div class="error">
+            {% if error %}
+            <p style="margin: 0 auto; text-align: center; color: red">{{ error }}</p>
+            {% endif %}
         </div>
     </form>
 </div>

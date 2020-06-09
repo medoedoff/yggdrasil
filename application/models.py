@@ -95,3 +95,20 @@ class Users(BaseModel, UserMixin):
 
     def __repr__(self):
         return f'email: {self.email}'
+
+
+class Tokens(BaseModel):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(510), unique=True, nullable=False)
+    read_access = db.Column(db.Boolean)
+    write_access = db.Column(db.Boolean)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    users = db.relationship('Users', backref=db.backref('tokens', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'token {self.token}'
+
+
+class BlacklistedTokens(BaseModel):
+    id = db.Column(db.Integer, primary_key=True)
+    token_id = db.Column(db.Integer, db.ForeignKey('tokens.id'), nullable=False)

@@ -7,7 +7,7 @@ from flask_security import login_user, logout_user
 from functools import wraps
 
 from .models import Users, jwt
-from .utils import flask_security_datastore_commit
+from .utils import flask_security_datastore_commit, gen_token_payload
 
 auth = Blueprint('auth', __name__)
 
@@ -45,7 +45,10 @@ def root(current_user):
 
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login():
+@token_required
+def login(current_user):
+    if current_user:
+        return redirect(url_for('admin.index'))
     if request.method == 'POST':
         error = 'Invalid email or password!'
         email_form = request.form['email']
@@ -60,16 +63,9 @@ def login():
 
         if verify and user.active:
             # Token credentials
-            exp_date = datetime.datetime.utcnow() + datetime.timedelta(days=7)
-            iat = datetime.datetime.utcnow()
             public_id = user.public_id
-
-            payload = {
-                'exp': exp_date,
-                'iat': iat,
-                'sub': public_id,
-                'blacklist': False
-            }
+            payload = gen_token_payload(public_id=public_id)
+            exp_date = payload.get('exp')
 
             auth_token = user.encode_auth_token(payload)
 
@@ -93,12 +89,8 @@ def logout():
     if auth_token is None:
         return redirect(url_for('auth.login'))
 
-    token_data = Users.decode_auth_token(auth_token)
-    token_data['blacklist'] = True
     logout_user()
 
-    black_listed_token = Users.encode_auth_token(token_data)
-
-    response = make_response(redirect(url_for('auth.login_get')))
-    response.set_cookie('auth_token', black_listed_token)
+    response = make_response(redirect(url_for('auth.login')))
+    response.set_cookie('auth_token', None)
     return response

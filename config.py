@@ -12,7 +12,7 @@ class Settings:
 class Config:
     DEBUG = False
     SECRET_KEY = os.getenv('SECRET_KEY')
-    FLASK_ADMIN_SWATCH = 'united'
+    FLASK_ADMIN_SWATCH = 'flatly'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECURITY_TRACKABLE = True
 

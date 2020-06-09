@@ -1,4 +1,5 @@
 import re
+import datetime
 from random import sample
 
 from flask import current_app
@@ -34,3 +35,16 @@ def email_validation(email):
     EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
     mat = EMAIL_REGEX.match(email)
     return mat
+
+
+def gen_token_payload(public_id, blacklist=False):
+    exp_date = datetime.datetime.utcnow() + datetime.timedelta(days=7)
+    iat = datetime.datetime.utcnow()
+
+    payload = {
+        'exp': exp_date,
+        'iat': iat,
+        'sub': public_id,
+        'blacklist': blacklist
+    }
+    return payload

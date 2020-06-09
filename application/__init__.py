@@ -5,9 +5,10 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_security import SQLAlchemyUserDatastore, Security
 
-from .admin import admin, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet, MyLogoutMenuLink
+from .admin import admin, jwt, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet, MyLogoutMenuLink,\
+    TokenModelViewSet, BlacklistedModelViewSet
 
-from .models import db, Users, Roles
+from .models import db, Users, Roles, Tokens, BlacklistedTokens
 
 from config import Settings
 
@@ -27,9 +28,12 @@ def create_app():
     db.init_app(app)
     admin.init_app(app, index_view=MyAdminIndexViewSet())
     security.init_app(app, user_datastore, register_blueprint=False)
+    jwt.init_app(app)
 
     admin.add_view(UserModelViewSet(Users, db.session))
     admin.add_view(RoleModelViewSet(Roles, db.session))
+    admin.add_view(TokenModelViewSet(Tokens, db.session))
+    admin.add_view(BlacklistedModelViewSet(BlacklistedTokens, db.session))
     admin.add_link(MyLogoutMenuLink(name='Logout', category='', url="/logout"))
 
     with app.app_context():

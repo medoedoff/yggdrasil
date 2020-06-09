@@ -3,13 +3,16 @@ from flask_admin import Admin, AdminIndexView
 from flask_admin.menu import MenuLink
 from flask_security.utils import hash_password
 from flask_security import current_user
+from flask_jwt_extended import create_refresh_token, JWTManager
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for
 
 from .auth import token_required
 from .utils import password_validation, email_validation
+from .models import Users
 
-admin = Admin(name='GIB-Teldrassil')
+admin = Admin(name='GIB-Teldrassil', template_mode='bootstrap3')
+jwt = JWTManager()
 
 
 class MyAdminIndexViewSet(AdminIndexView):
@@ -66,4 +69,20 @@ class UserModelViewSet(MyModelViewSet):
 
 
 class RoleModelViewSet(MyModelViewSet):
+    pass
+
+
+class TokenModelViewSet(MyModelViewSet):
+    form_columns = ('users', 'token', 'read_access', 'write_access')
+    column_exclude_list = ('created', 'updated')
+
+    def create_form(self):
+        public_id = current_user.public_id
+        refresh_token = create_refresh_token(identity=public_id)
+        form = super(TokenModelViewSet, self).create_form()
+        form.token.data = refresh_token
+        return form
+
+
+class BlacklistedModelViewSet(MyModelViewSet):
     pass

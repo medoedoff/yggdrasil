@@ -1,22 +1,20 @@
 from flask_admin.contrib.sqla import ModelView
-from flask_admin import Admin, AdminIndexView
+from flask_admin import Admin, AdminIndexView, expose, BaseView
 from flask_admin.menu import MenuLink
 from flask_security.utils import hash_password
 from flask_security import current_user
-from flask_jwt_extended import create_refresh_token, JWTManager
+from flask_jwt_extended import JWTManager
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for
 
-from .auth import token_required
 from .utils import password_validation, email_validation
-from .models import Users
+from .models import Tokens
 
 admin = Admin(name='GIB-Teldrassil', template_mode='bootstrap3')
 jwt = JWTManager()
 
 
 class MyAdminIndexViewSet(AdminIndexView):
-    @token_required
     def is_accessible(self, *args, **kwargs):
         if current_user.is_authenticated and current_user.is_active:
             return True
@@ -24,26 +22,36 @@ class MyAdminIndexViewSet(AdminIndexView):
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('auth.login'))
 
+    @expose('/')
+    def index(self):
+        tokens = Tokens.query.filter_by(user_id=current_user.id).all()
+        response_data = {
+            'full_name': f'{current_user.first_name} {current_user.last_name}',
+            'auth_tokens': {
+            }
+        }
+        for i in range(len(tokens)):
+            response_data['auth_tokens'][i] = [tokens[i].name, tokens[i].description, tokens[i].authorized_at]
+
+        return self.render('admin/index.html', data=response_data)
+
 
 class MyModelViewSet(ModelView):
-    @token_required
     def is_accessible(self, *args, **kwargs):
-        if current_user.is_authenticated and current_user.is_active:
-            if 'admin' in current_user.roles or current_user.super_user:
-                return True
+        if current_user.is_authenticated and current_user.is_active and current_user.has_role('admin'):
+            return True
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(url_for('auth.login'))
 
 
 class MyLogoutMenuLink(MenuLink):
-    @token_required
     def is_accessible(self, *args, **kwargs):
         return current_user.is_authenticated
 
 
 class UserModelViewSet(MyModelViewSet):
-    column_exclude_list = ('password', 'public_id')
+    column_exclude_list = 'password'
     form_columns = ('email', 'Password', 'Confirm password', 'first_name', 'last_name', 'roles', 'active')
     form_extra_fields = {
         'Password': PasswordField('Password'),
@@ -72,17 +80,11 @@ class RoleModelViewSet(MyModelViewSet):
     pass
 
 
-class TokenModelViewSet(MyModelViewSet):
-    form_columns = ('users', 'token', 'read_access', 'write_access')
-    column_exclude_list = ('created', 'updated')
-
-    def create_form(self):
-        public_id = current_user.public_id
-        refresh_token = create_refresh_token(identity=public_id)
-        form = super(TokenModelViewSet, self).create_form()
-        form.token.data = refresh_token
-        return form
-
-
 class BlacklistedModelViewSet(MyModelViewSet):
-    pass
+    column_exclude_list = ('created', 'updated')
+    form_excluded_columns = ('created', 'updated')
+
+
+class TokensModelViewSet(MyModelViewSet):
+    column_exclude_list = ('created', 'updated')
+    form_excluded_columns = ('created', 'updated')

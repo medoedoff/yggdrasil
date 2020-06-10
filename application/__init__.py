@@ -6,9 +6,9 @@ from flask import Flask
 from flask_security import SQLAlchemyUserDatastore, Security
 
 from .admin import admin, jwt, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet, MyLogoutMenuLink,\
-    TokenModelViewSet, BlacklistedModelViewSet
+    BlacklistedModelViewSet, TokensModelViewSet
 
-from .models import db, Users, Roles, Tokens, BlacklistedTokens
+from .models import db, Users, Roles, BlacklistedTokens, Tokens
 
 from config import Settings
 
@@ -32,8 +32,8 @@ def create_app():
 
     admin.add_view(UserModelViewSet(Users, db.session))
     admin.add_view(RoleModelViewSet(Roles, db.session))
-    admin.add_view(TokenModelViewSet(Tokens, db.session))
     admin.add_view(BlacklistedModelViewSet(BlacklistedTokens, db.session))
+    admin.add_view(TokensModelViewSet(Tokens, db.session))
     admin.add_link(MyLogoutMenuLink(name='Logout', category='', url="/logout"))
 
     with app.app_context():

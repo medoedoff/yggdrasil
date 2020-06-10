@@ -47,9 +47,6 @@ class Users(BaseModel, UserMixin):
     # Primary Key
     id = db.Column(db.Integer, primary_key=True)
 
-    # Public key
-    public_id = db.Column(db.String(50), unique=True, index=True, nullable=False, default=gen_public_id())
-
     # Info
     first_name = db.Column(db.String(length=128))
     last_name = db.Column(db.String(length=128))
@@ -99,16 +96,20 @@ class Users(BaseModel, UserMixin):
 
 class Tokens(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.String(510), unique=True, nullable=False)
-    read_access = db.Column(db.Boolean)
-    write_access = db.Column(db.Boolean)
+    token_id = db.Column(db.String(32), unique=True, index=True, nullable=False, default=gen_public_id())
+    name = db.Column(db.String(length=128))
+    description = db.Column(db.Text())
+    authorized_at = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     users = db.relationship('Users', backref=db.backref('tokens', lazy='dynamic'))
 
     def __repr__(self):
-        return f'token {self.token}'
+        return f'name: {self.name}'
 
 
 class BlacklistedTokens(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    token_id = db.Column(db.Integer, db.ForeignKey('tokens.id'), nullable=False)
+    token_id = db.Column(db.String(32), unique=True, index=True)
+
+    def __repr__(self):
+        return f'token_id: {self.token_id}'

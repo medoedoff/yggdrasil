@@ -17,6 +17,7 @@
         <table class="table">
             <thead>
                 <tr>
+                    <th scope="col">Token id</th>
                     <th scope="col">Name</th>
                     <th scope="col">Descriptions</th>
                     <th scope="col">Authorized at</th>
@@ -26,12 +27,14 @@
             <tbody>
             {% for key, value in data.auth_tokens.items() %}
                 <tr>
-                    {% for item in value %}
+                <form method="POST">
+                    {% for inner_key, inner_value in value.items() %}
                     <td style="vertical-align: middle">
-                        {{ item }}
+                        <input type="hidden" name="{{ inner_key }}" value="{{ inner_value }}">{{ inner_value }}
                     </td>
                     {% endfor %}
-                    <td><button class="button">revoke</button></td>
+                    <td><button type="submit" class="button">revoke</button></td>
+                </form>
                 </tr>
             {% endfor %}
             </tbody>

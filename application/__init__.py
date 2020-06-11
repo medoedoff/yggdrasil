@@ -32,8 +32,8 @@ def create_app():
 
     admin.add_view(UserModelViewSet(Users, db.session))
     admin.add_view(RoleModelViewSet(Roles, db.session))
-    admin.add_view(BlacklistedModelViewSet(BlacklistedTokens, db.session))
     admin.add_view(TokensModelViewSet(Tokens, db.session))
+    admin.add_view(BlacklistedModelViewSet(BlacklistedTokens, db.session))
     admin.add_link(MyLogoutMenuLink(name='Logout', category='', url="/logout"))
 
     with app.app_context():

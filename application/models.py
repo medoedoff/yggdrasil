@@ -96,7 +96,7 @@ class Users(BaseModel, UserMixin):
 
 class Tokens(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
-    token_id = db.Column(db.String(32), unique=True, index=True, nullable=False, default=gen_public_id())
+    token_id = db.Column(db.String(32), unique=True, index=True, nullable=False, default=gen_public_id)
     name = db.Column(db.String(length=128))
     description = db.Column(db.Text())
     authorized_at = db.Column(db.DateTime)

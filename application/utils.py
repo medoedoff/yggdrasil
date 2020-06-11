@@ -38,20 +38,27 @@ def email_validation(email):
     return mat
 
 
-def gen_token_payload(public_id, days_lifetime=30):
+def gen_token_payload(email, token_id=None, days_lifetime=1):
     """
     Generates token payload
-    :param public_id: str user's public id
-    :param days_lifetime:  int token life time value (days)
+    :param email: str user's email
+    :param days_lifetime: bool or int token life time value (days)
+    :param token_id: str token id
     :return: dict payload
     """
-    exp_date = datetime.datetime.utcnow() + datetime.timedelta(seconds=days_lifetime)
+    exp_date = datetime.datetime.utcnow() + datetime.timedelta(days=days_lifetime)
     iat = datetime.datetime.utcnow()
 
-    payload = {
-        'exp': exp_date,
-        'iat': iat,
-        'sub': public_id,
-        'token_id': gen_public_id()
-    }
+    if days_lifetime:
+        payload = {
+            'exp': exp_date,
+            'iat': iat,
+            'sub': email,
+            'token_id': token_id or gen_public_id()
+        }
+    else:
+        payload = {
+            'sub': email,
+            'token_id': token_id or gen_public_id()
+        }
     return payload

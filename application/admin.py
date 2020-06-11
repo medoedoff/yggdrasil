@@ -1,5 +1,5 @@
 from flask_admin.contrib.sqla import ModelView
-from flask_admin import Admin, AdminIndexView, expose
+from flask_admin import Admin, AdminIndexView, expose, BaseView
 from flask_admin.menu import MenuLink
 from flask_security.utils import hash_password
 from flask_security import current_user
@@ -7,8 +7,8 @@ from flask_jwt_extended import JWTManager
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for, request
 
-from .utils import password_validation, email_validation, db
-from .models import Tokens, BlacklistedTokens
+from .utils import password_validation, email_validation, db, gen_token_payload, gen_public_id
+from .models import Tokens, BlacklistedTokens, Users
 
 admin = Admin(name='GIB-Teldrassil', template_mode='bootstrap3')
 jwt = JWTManager()
@@ -25,6 +25,21 @@ class MyAdminIndexViewSet(AdminIndexView):
     @expose('/', methods=('GET', 'POST'))
     def index(self):
         token_id = request.values.get('Token id', None)
+        new_token = request.values
+        auth_token = request.args.get('token', None)
+        if new_token.get('create', None):
+            token_id = gen_public_id()
+            email = current_user.email
+            save_to_db = Tokens(user_id=current_user.id, token_id=token_id, name=new_token.get('name'),
+                                description=new_token.get('description'))
+            db.session.add(save_to_db)
+            db.session.commit()
+
+            # Create auth token
+            payload = gen_token_payload(email=email, token_id=token_id, days_lifetime=False)
+            auth_token = Users.encode_auth_token(payload=payload)
+            new_token['create'] = None
+            return redirect(url_for('admin.index', token=auth_token.decode('utf-8')), code=307)
         if token_id:
             black_list_token = BlacklistedTokens(token_id=token_id)
             db.session.add(black_list_token)
@@ -46,7 +61,7 @@ class MyAdminIndexViewSet(AdminIndexView):
                 'Authorized at': tokens[i].authorized_at
             }
 
-        return self.render('admin/index.html', data=response_data)
+        return self.render('admin/index.html', data=response_data, token=auth_token)
 
 
 class MyModelViewSet(ModelView):

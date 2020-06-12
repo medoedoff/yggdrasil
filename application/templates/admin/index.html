@@ -23,7 +23,7 @@
                 <textarea class="form-control" rows="3" name="description" placeholder="Description"></textarea>
             </div>
             <div class="form-group create-token-form" style="margin-left: 20px">
-                <button class="button" type="submit" name="create" value="true">create</button>
+                <button class="button" type="submit" name="action" value="create">create</button>
             </div>
         </form>
         {% if token %}
@@ -55,7 +55,7 @@
                         <input type="hidden" name="{{ inner_key }}" value="{{ inner_value }}">{{ inner_value }}
                     </td>
                     {% endfor %}
-                    <td><button type="submit" class="button">revoke</button></td>
+                    <td><button type="submit" class="button" name="action" value="revoke">revoke</button></td>
                 </form>
                 </tr>
             {% endfor %}

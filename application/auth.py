@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, redirect, url_for
+from flask import Blueprint, request, render_template, redirect, url_for, flash
 from flask_security.utils import get_hmac, _pwd_context
 from flask_security import login_user, logout_user, current_user
 
@@ -52,7 +52,8 @@ def login():
 
         user = Users.query.filter_by(email=email_form).first()
         if not user:
-            return render_template('login/index.html', error=error)
+            flash(f'{error}', 'error')
+            return redirect(url_for('auth.login'))
 
         password_form = get_hmac(password_form)
         verify = _pwd_context.verify(password_form, user.password)
@@ -63,7 +64,8 @@ def login():
             flask_security_datastore_commit()
             return redirect(url_for('admin.index'))
         else:
-            return render_template('login/index.html', error=error)
+            flash(f'{error}', 'error')
+            return redirect(url_for('auth.login'))
 
     return render_template('login/index.html')
 

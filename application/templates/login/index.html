@@ -5,46 +5,16 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Teldrassil login page</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<style type="text/css">
-	.login-form {
-		width: 340px;
-        margin: 0;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        -ms-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
-	}
-    .login-form form {
-    	margin-bottom: 15px;
-        background: #f7f7f7;
-        box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
-        padding: 30px;
-    }
-    .login-form h2 {
-        margin: 0 0 15px;
-    }
-    .form-control, .btn {
-        min-height: 38px;
-        border-radius: 2px;
-    }
-    .btn {
-        font-size: 15px;
-        font-weight: bold;
-    }
-    .error{
-        margin: auto;
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </head>
 <body>
 <div class="login-form">
     <form method="POST">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <h2 class="text-center">Log in</h2>
+        <h2 class="text-center">Teldrassil</h2>
         <div class="form-group">
             <input type="text" class="form-control" name="email" placeholder="Email" required="required">
         </div>
@@ -55,9 +25,13 @@
             <button type="submit" class="btn btn-primary btn-block">Log in</button>
         </div>
         <div class="error">
-            {% if error %}
-            <p style="margin: 0 auto; text-align: center; color: red">{{ error }}</p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <p class="{{ category }} error">{{ message }}</p>
+                {% endfor %}
             {% endif %}
+            {% endwith %}
         </div>
     </form>
 </div>

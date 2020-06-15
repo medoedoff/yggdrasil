@@ -8,6 +8,7 @@ from werkzeug.local import LocalProxy
 security = LocalProxy(lambda: current_app.extensions['security'])
 datastore = LocalProxy(lambda: security.datastore)
 db = LocalProxy(lambda: current_app.extensions['sqlalchemy'].db)
+csrf = LocalProxy(lambda: current_app.extensions['csrf'])
 
 
 def flask_security_datastore_commit():

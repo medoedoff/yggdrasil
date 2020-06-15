@@ -4,7 +4,6 @@ from flask_admin.menu import MenuLink
 from flask_security.utils import hash_password
 from flask_security import current_user
 from flask_jwt_extended import JWTManager
-from flask_wtf import FlaskForm
 from flask import flash
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for, request
@@ -26,12 +25,16 @@ class MyAdminIndexViewSet(AdminIndexView):
 
     @staticmethod
     def _create_token(data):
-        token_id = gen_public_id()
         email = current_user.email
-        save_to_db = Tokens(user_id=current_user.id, token_id=token_id, name=data.get('name'),
-                            description=data.get('description'))
-        db.session.add(save_to_db)
-        db.session.commit()
+        blacklisted_tokens = BlacklistedTokens.query.all()
+        while True:
+            token_id = gen_public_id()
+            if token_id not in blacklisted_tokens:
+                save_to_db = Tokens(user_id=current_user.id, token_id=token_id, name=data.get('name'),
+                                    description=data.get('description'))
+                db.session.add(save_to_db)
+                db.session.commit()
+                break
 
         # Create auth token
         payload = gen_token_payload(email=email, token_id=token_id, days_lifetime=False)
@@ -78,10 +81,10 @@ class MyAdminIndexViewSet(AdminIndexView):
 
 
 class MyModelViewSet(ModelView):
-    form_base_class = FlaskForm
 
     def is_accessible(self, *args, **kwargs):
-        if current_user.is_authenticated and current_user.is_active and current_user.has_role('admin'):
+        if current_user.is_authenticated and current_user.is_active and current_user.has_role(
+                'admin') or current_user.super_user:
             return True
 
     def inaccessible_callback(self, name, **kwargs):

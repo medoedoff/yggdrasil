@@ -3,9 +3,10 @@ from flask_security.utils import get_hmac, _pwd_context
 from flask_security import login_user, logout_user, current_user
 
 from functools import wraps
+from datetime import datetime
 
-from .models import Users, jwt
-from .utils import flask_security_datastore_commit
+from .models import Users, BlacklistedTokens, Tokens, jwt
+from .utils import flask_security_datastore_commit, db
 
 auth = Blueprint('auth', __name__)
 
@@ -14,19 +15,26 @@ auth = Blueprint('auth', __name__)
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        auth_token = request.cookies.get('auth_token', None)
+        auth_token = request.headers.get('Authorization', None)
         user = None
         if auth_token is not None:
             try:
                 token_data = Users.decode_auth_token(auth_token)
-                public_id = token_data.get('sub', None)
+                email = token_data.get('sub', None)
+                token_id = token_data.get('token_id', None)
             except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
                 return f(user, *args, **kwargs)
-            blacklist = token_data.get('blacklist', False)
-            if blacklist:
-                return f(user, *args, **kwargs)
-            user = Users.query.filter_by(public_id=public_id).first()
-            return f(user, *args, **kwargs)
+            if token_id is not None:
+                is_token_blacklisted = BlacklistedTokens.query.filter_by(token_id=token_id).first()
+                if is_token_blacklisted:
+                    return f(user, *args, **kwargs)
+                else:
+                    current_token = Tokens.query.filter_by(token_id=token_id).first()
+                    current_token.authorized_at = datetime.utcnow().replace(second=0, microsecond=0)
+                    db.session.add(current_token)
+                    db.session.commit()
+                    user = Users.query.filter_by(email=email).first()
+                    return f(user, *args, **kwargs)
         else:
             return f(user, *args, **kwargs)
 

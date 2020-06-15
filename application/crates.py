@@ -7,12 +7,16 @@ from flask import jsonify, send_file, Blueprint, request
 from libs.common import check_package_dir_existence, check_package_existence
 from libs.repository import Index, SavePackage, ReformatPackageJson, HTTPStatus
 
+from .utils import csrf
+from .auth import token_required
+
 mirror_blueprint = Blueprint('mirror', __name__)
 upload_package_blueprint = Blueprint('upload_package', __name__)
 
 error_statuses = {
     HTTPStatus.CONFLICT.value: 'package current version already exists',
-    HTTPStatus.BAD_REQUEST.value: 'invalid package name'
+    HTTPStatus.BAD_REQUEST.value: 'invalid package name',
+    HTTPStatus.FORBIDDEN.value: 'You have not valid access rights'
 }
 
 success_statuses = {
@@ -22,6 +26,7 @@ success_statuses = {
 
 # Cashing packages from upstream
 @mirror_blueprint.route('/<package>/<version>/download')
+@csrf.exempt
 def mirror(package, version):
     """
     :param version: str package version
@@ -54,7 +59,9 @@ def log_request_info():
 
 # Upload private packages
 @upload_package_blueprint.route('/new', methods=['PUT'])
-def upload():
+@csrf.exempt
+@token_required
+def upload(current_user):
     """
     format of data:
     < le u32 of json >
@@ -62,28 +69,32 @@ def upload():
     < le u32 of tarball >
     < source tarball >
     """
-    data = request.data
-    git_index_path = '/var/lib/teldrassil/crates.io-tds-index'
-    json_bytes = data[4:int.from_bytes(data[0:4], "little") + 4]  # get json bytes information about package
-    tar_bytes = data[int.from_bytes(data[0:4], "little") + 8:]  # get data bytes of package
-    package_hash = sha256(tar_bytes).hexdigest()
-    package_metadata = json.loads(json_bytes)
+    if current_user is not None and current_user.is_active:
+        data = request.data
+        git_index_path = '/var/lib/teldrassil/crates.io-tds-index'
+        json_bytes = data[4:int.from_bytes(data[0:4], "little") + 4]  # get json bytes information about package
+        tar_bytes = data[int.from_bytes(data[0:4], "little") + 8:]  # get data bytes of package
+        package_hash = sha256(tar_bytes).hexdigest()
+        package_metadata = json.loads(json_bytes)
 
-    reformat_package_metadata = ReformatPackageJson(package_metadata=package_metadata, package_hash=package_hash)
-    package_info = reformat_package_metadata.reformat()
+        reformat_package_metadata = ReformatPackageJson(package_metadata=package_metadata, package_hash=package_hash)
+        package_info = reformat_package_metadata.reformat()
 
-    package_name = package_info['name']
-    package_version = package_info['vers']
-    package_path = f'packages/{package_name}/{package_version}/download'
-    package_dir = f'packages/{package_name}/{package_version}'
+        package_name = package_info['name']
+        package_version = package_info['vers']
+        package_path = f'packages/{package_name}/{package_version}/download'
+        package_dir = f'packages/{package_name}/{package_version}'
 
-    index = Index(index_path=git_index_path, package_info=package_info, package_name=package_name)
-    package = SavePackage(path_to_save=package_path, package_data=tar_bytes)
+        index = Index(index_path=git_index_path, package_info=package_info, package_name=package_name)
+        package = SavePackage(path_to_save=package_path, package_data=tar_bytes)
 
-    status = index.synchronise()
-    if status in success_statuses:
-        check_package_dir_existence(package_dir)
-        package.save()
-        return jsonify(message=success_statuses[HTTPStatus.OK.value]), status
-    elif status in error_statuses:
-        return jsonify(message=error_statuses[status]), status
+        status = index.synchronise()
+        if status in success_statuses:
+            check_package_dir_existence(package_dir)
+            package.save()
+            return jsonify(message=success_statuses[HTTPStatus.OK.value]), status
+        elif status in error_statuses:
+            return jsonify(message=error_statuses[status]), status
+    else:
+        return jsonify(message=error_statuses[HTTPStatus.FORBIDDEN.value]), HTTPStatus.FORBIDDEN.value
+

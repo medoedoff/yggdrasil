@@ -43,6 +43,7 @@
 <body>
 <div class="login-form">
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <h2 class="text-center">Log in</h2>
         <div class="form-group">
             <input type="text" class="form-control" name="email" placeholder="Email" required="required">

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 from flask import Flask
 from flask_security import SQLAlchemyUserDatastore, Security
+from flask_wtf.csrf import CSRFProtect
 
 from .admin import admin, jwt, MyAdminIndexViewSet, UserModelViewSet, RoleModelViewSet, MyLogoutMenuLink,\
     BlacklistedModelViewSet, TokensModelViewSet
@@ -13,6 +14,7 @@ from .models import db, Users, Roles, BlacklistedTokens, Tokens
 from config import Settings
 
 security = Security()
+csrf = CSRFProtect()
 
 fileConfig(Settings.log_file_path)
 
@@ -29,6 +31,7 @@ def create_app():
     admin.init_app(app, index_view=MyAdminIndexViewSet())
     security.init_app(app, user_datastore, register_blueprint=False)
     jwt.init_app(app)
+    csrf.init_app(app)
 
     admin.add_view(UserModelViewSet(Users, db.session))
     admin.add_view(RoleModelViewSet(Roles, db.session))

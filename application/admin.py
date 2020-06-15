@@ -4,6 +4,7 @@ from flask_admin.menu import MenuLink
 from flask_security.utils import hash_password
 from flask_security import current_user
 from flask_jwt_extended import JWTManager
+from flask_wtf import FlaskForm
 from flask import flash
 from wtforms import PasswordField, ValidationError
 from flask import redirect, url_for, request
@@ -77,6 +78,8 @@ class MyAdminIndexViewSet(AdminIndexView):
 
 
 class MyModelViewSet(ModelView):
+    form_base_class = FlaskForm
+
     def is_accessible(self, *args, **kwargs):
         if current_user.is_authenticated and current_user.is_active and current_user.has_role('admin'):
             return True

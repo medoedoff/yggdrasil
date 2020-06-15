@@ -16,6 +16,7 @@
     <div class="col-md-12" style="margin: 20px 20px"></div>
     <div class="col-md-12">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group create-token-form">
                 <input class="form-control" type="text" name="name" required="required" placeholder="Name">
             </div>
@@ -26,9 +27,6 @@
                 <button class="button" type="submit" name="action" value="create">create</button>
             </div>
         </form>
-        {% if token %}
-            <p style="margin-top: 20px">Do not forget to save your auth Token!: {{ token }}</p>
-        {% endif %}
     </div>
     <div class="col-md-12" style="margin: 20px 20px"></div>
     <div class="col-md-12">
@@ -50,6 +48,7 @@
             {% for key, value in data.auth_tokens.items() %}
                 <tr>
                 <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% for inner_key, inner_value in value.items() %}
                     <td style="vertical-align: middle">
                         <input type="hidden" name="{{ inner_key }}" value="{{ inner_value }}">{{ inner_value }}

@@ -11,6 +11,7 @@ stages:
 
 build-dev-arch:
   extends: .build_dev_python_arch
+  image: gitlab.soc.group-ib.com:4567/infrastructure/docker-images/archlinux:protostar
   stage: build-dev
   variables:
     IMAGE_PATH: "archlinux:generic-python-builder"

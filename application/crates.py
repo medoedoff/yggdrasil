@@ -1,6 +1,7 @@
 import json
 import logging
 
+from os import getenv
 from hashlib import sha256
 from config import Settings
 from flask import jsonify, send_file, Blueprint, request
@@ -71,7 +72,7 @@ def upload(current_user):
     """
     if current_user is not None and current_user.is_active:
         data = request.data
-        git_index_path = '/var/lib/teldrassil/crates.io-tds-index'
+        git_index_path = getenv('GIT_INDEX_PATH', None)
         json_bytes = data[4:int.from_bytes(data[0:4], "little") + 4]  # get json bytes information about package
         tar_bytes = data[int.from_bytes(data[0:4], "little") + 8:]  # get data bytes of package
         package_hash = sha256(tar_bytes).hexdigest()

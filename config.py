@@ -11,10 +11,12 @@ class Settings:
 
 class Config:
     DEBUG = False
-    SECRET_KEY = os.getenv('SECRET_KEY')
+    SECRET_KEY = os.getenv('SECRET_KEY', None)
     FLASK_ADMIN_SWATCH = 'flatly'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECURITY_TRACKABLE = True
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', None)
+    SECURITY_PASSWORD_SALT = os.getenv('SECURITY_PASSWORD_SALT', None)
 
 
 class ProductionConfig(Config):
@@ -22,7 +24,5 @@ class ProductionConfig(Config):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'postgres://teldrassil@127.0.0.1/teldrassil_db'
     DEVELOPMENT = True
     DEBUG = True
-    SECURITY_PASSWORD_SALT = 'aF&YQ&a?63y=7dG'

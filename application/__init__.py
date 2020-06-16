@@ -23,7 +23,7 @@ load_dotenv(dotenv_path=Settings.env_path)
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(getenv('APP_SETTINGS'))
+    app.config.from_object(getenv('APP_SETTINGS', None))
 
     user_datastore = SQLAlchemyUserDatastore(db, Users, Roles)
 

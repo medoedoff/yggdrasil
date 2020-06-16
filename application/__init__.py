@@ -1,6 +1,5 @@
 from os import getenv
 from logging.config import fileConfig
-from dotenv import load_dotenv
 
 from flask import Flask
 from flask_security import SQLAlchemyUserDatastore, Security
@@ -17,8 +16,6 @@ security = Security()
 csrf = CSRFProtect()
 
 fileConfig(Settings.log_file_path)
-
-load_dotenv(dotenv_path=Settings.env_path)
 
 
 def create_app():

@@ -11,10 +11,9 @@ stages:
 
 build-dev-arch:
   extends: .build_dev_python_arch
-  image: gitlab.soc.group-ib.com:4567/infrastructure/docker-images/archlinux:protostar
   stage: build-dev
   variables:
-    IMAGE_PATH: "archlinux:generic-python-builder"
+    IMAGE_PATH: "archlinux:teldrassil"
   allow_failure: true
 
 publish-dev-arch:
@@ -27,7 +26,7 @@ build-prod-arch:
   extends: .build_prod_python_arch
   stage: build-prod
   variables:
-    IMAGE_PATH: "archlinux:generic-python-builder"
+    IMAGE_PATH: "archlinux:teldrassil"
   allow_failure: true
 
 publish-prod-arch:

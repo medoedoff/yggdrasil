@@ -25,9 +25,16 @@ class MyAdminIndexViewSet(AdminIndexView):
 
     @staticmethod
     def _create_token(data):
+        """
+        Create token private method
+        :param data: dict data from form
+        :return:
+        """
         email = current_user.email
         blacklisted_tokens = BlacklistedTokens.query.all()
         while True:
+            # Validate that new token id not in black list
+            # If in black list generate again
             token_id = gen_public_id()
             if token_id not in blacklisted_tokens:
                 save_to_db = Tokens(user_id=current_user.id, token_id=token_id, name=data.get('name'),
@@ -44,7 +51,13 @@ class MyAdminIndexViewSet(AdminIndexView):
 
     @staticmethod
     def _revoke_token(data):
+        """
+        Revoke token private method
+        :param data: dict data from form
+        :return:
+        """
         token_id = data.get('Token id', None)
+        # Add revoking token id into black list
         black_list_token = BlacklistedTokens(token_id=token_id)
         db.session.add(black_list_token)
         db.session.commit()
@@ -57,7 +70,6 @@ class MyAdminIndexViewSet(AdminIndexView):
     def index(self):
         action = request.values.get('action')
         data = request.values
-        auth_token = None
         tokens = Tokens.query.filter_by(user_id=current_user.id).all()
         response_data = {
             'full_name': f'{current_user.first_name} {current_user.last_name}',
@@ -77,7 +89,7 @@ class MyAdminIndexViewSet(AdminIndexView):
         elif action == 'revoke':
             return self._revoke_token(data)
 
-        return self.render('admin/index.html', data=response_data, token=auth_token)
+        return self.render('admin/index.html', data=response_data)
 
 
 class MyModelViewSet(ModelView):
@@ -107,6 +119,8 @@ class UserModelViewSet(MyModelViewSet):
                              'last_login_ip', 'current_login_ip', 'login_count', 'password')
 
     def on_model_change(self, form, model, is_created=True):
+        # Dirty logic to validate that we trying create
+        # Otherwise we editing
         creation_mode = all([model.email, form.data.get('Password', None)])
         if creation_mode:
             password = form.data.get('Password', None)

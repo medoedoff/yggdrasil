@@ -26,7 +26,7 @@ success_statuses = {
 
 
 # Cashing packages from upstream
-@mirror_blueprint.route('/<package>/<version>/download')
+@mirror_blueprint.route('/<package>/<version>/download', methods=['GET'])
 @csrf.exempt
 def mirror(package, version):
     """
@@ -64,6 +64,7 @@ def log_request_info():
 @token_required
 def upload(current_user):
     """
+    :param current_user: dict or None if None current user authentication not passed
     format of data:
     < le u32 of json >
     < json request > (metadata for the package)

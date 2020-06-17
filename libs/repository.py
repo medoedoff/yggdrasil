@@ -17,6 +17,8 @@ class Index:
         self.index_path = index_path
         self.package_info = package_info
         self.repo = Repo(index_path)
+        self.git_ssh_cmd = f"ssh -i {os.getenv('GIT_KEY_PATH')} " \
+                           f"-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
         self.package_version = self.package_info['vers']
         self.commit_message = f'Updating crate `{package_name}#{self.package_version}`'
 
@@ -62,6 +64,12 @@ class Index:
             divided_string = f'{self.package_name[0:2]}/{self.package_name[2:4]}'
             return divided_string
 
+    def _git(self, path_to_save_package_info):
+        with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.git_ssh_cmd):
+            self.repo.git.add(path_to_save_package_info)
+            self.repo.git.commit(m=self.commit_message)
+            self.repo.git.push()
+
     def _create(self, path_to_save_package_info):
         package_info = json.dumps(self.package_info)
         # Remove all whitespaces
@@ -69,10 +77,7 @@ class Index:
         with open(path_to_save_package_info, 'w') as json_file:
             json_file.write(package_info)
             json_file.write('\n')
-        self.repo.git.add(path_to_save_package_info)
-        self.repo.git.commit(m=self.commit_message)
-        self.repo.git.push()
-        return
+        return self._git(path_to_save_package_info)
 
     def _update(self, path_to_save_package_info):
         package_info = json.dumps(self.package_info)
@@ -81,10 +86,7 @@ class Index:
         with open(path_to_save_package_info, 'a') as json_file:
             json_file.write(package_info)
             json_file.write('\n')
-        self.repo.git.add(path_to_save_package_info)
-        self.repo.git.commit(m=self.commit_message)
-        self.repo.git.push()
-        return
+        return self._git(path_to_save_package_info)
 
     def synchronise(self):
         """

@@ -2,7 +2,7 @@ import os
 import json
 import string
 
-from git import Repo
+from git import Repo, GitCommandError, GitError
 from http import HTTPStatus
 
 
@@ -65,10 +65,14 @@ class Index:
             return divided_string
 
     def _git(self, path_to_save_package_info):
-        with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.git_ssh_cmd):
-            self.repo.git.add(path_to_save_package_info)
-            self.repo.git.commit(m=self.commit_message)
-            self.repo.git.push()
+        try:
+            with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.git_ssh_cmd):
+                self.repo.git.add(path_to_save_package_info)
+                self.repo.git.commit(m=self.commit_message)
+                self.repo.git.push()
+        except GitCommandError as error:
+            self.repo.head.reset('HEAD~1', index=True, working_tree=True)
+            raise GitError(str(error))
 
     def _create(self, path_to_save_package_info):
         package_info = json.dumps(self.package_info)

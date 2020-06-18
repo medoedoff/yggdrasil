@@ -66,12 +66,9 @@ class Index:
 
     def _git(self, path_to_save_package_info):
         try:
-            with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.git_ssh_cmd, GIT_AUTHOR_NAME='TDS Admin',
-                                                  GIT_AUTHOR_EMAIL='admin-tds@group-ib.com'):
-                # hello
-                self.repo.git.add(path_to_save_package_info)
-                self.repo.git.commit(m=self.commit_message)
-                self.repo.git.push()
+            self.repo.git.add(path_to_save_package_info)
+            self.repo.git.commit(m=self.commit_message)
+            self.repo.git.push()
         except GitCommandError as error:
             self.repo.head.reset('HEAD~1', index=True, working_tree=True)
             raise GitError(str(error))
@@ -110,18 +107,22 @@ class Index:
         if bad_package_name:
             return bad_package_name
 
-        if os.path.isfile(path_to_save_package_info) is False:
-            os.makedirs(package_index_path)
-            self._create(path_to_save_package_info)
-            return HTTPStatus.OK.value
-        else:
-            with open(path_to_save_package_info) as file:
-                for line in file.readlines():
-                    current_package_info = json.loads(line)
-                    if current_package_info['vers'] == self.package_info['vers']:
-                        return HTTPStatus.CONFLICT.value
-            self._update(path_to_save_package_info)
-            return HTTPStatus.OK.value
+        # Create or update package
+        with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.git_ssh_cmd, GIT_AUTHOR_NAME='TDS Admin',
+                                              GIT_AUTHOR_EMAIL='admin-tds@group-ib.com'):
+            self.repo.git.pull()
+            if os.path.isfile(path_to_save_package_info) is False:
+                os.makedirs(package_index_path)
+                self._create(path_to_save_package_info)
+                return HTTPStatus.OK.value
+            else:
+                with open(path_to_save_package_info) as file:
+                    for line in file.readlines():
+                        current_package_info = json.loads(line)
+                        if current_package_info['vers'] == self.package_info['vers']:
+                            return HTTPStatus.CONFLICT.value
+                self._update(path_to_save_package_info)
+                return HTTPStatus.OK.value
 
 
 class ReformatPackageJson:

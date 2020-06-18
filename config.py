@@ -26,3 +26,7 @@ class Config:
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
+
+
+class ProductionConfig(Config):
+    PRODUCTION = True

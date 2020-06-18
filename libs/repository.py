@@ -68,6 +68,7 @@ class Index:
         try:
             with self.repo.git.custom_environment(GIT_SSH_COMMAND=self.git_ssh_cmd, GIT_AUTHOR_NAME='TDS Admin',
                                                   GIT_AUTHOR_EMAIL='admin-tds@group-ib.com'):
+                # hello
                 self.repo.git.add(path_to_save_package_info)
                 self.repo.git.commit(m=self.commit_message)
                 self.repo.git.push()

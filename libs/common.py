@@ -1,41 +1,31 @@
 import os
 import requests
 
-error_status = 406
-permission_error = 403
-ok_status = 200
-success_message = 'Success!'
 
-
-def check_dir_existence(directory):
+def check_package_dir_existence(directory):
     """
     Checking directories existence
+    if does not exists will create
 
     :param directory: str of directories
-    :return: None if ok or list of errors
+    :return: None if ok
     """
     if os.path.isdir(directory) is False:
-        try:
-            os.makedirs(directory)
-        except (PermissionError, OSError, IOError) as error:
-            return str(error), error_status
-    return success_message, ok_status
+        os.makedirs(directory)
+    return
 
 
-def check_file_existence(file):
+def check_package_existence(base_path, base_url):
     """
-    Checking files existence
+    Checking package existence
+    if does not exists will download
 
-    :param file: str of files
-    :return: None if ok or list of errors
+    :param base_path: str path to package
+    :param base_url: str url
+    :return: None if ok
     """
-    base_path = 'packages/{}'.format(file)
-    base_url = 'https://crates.io/api/v1/crates/{}'.format(file)
     if os.path.isfile(base_path) is False:
         response = requests.get(base_url)
-        try:
-            with open(base_path, 'wb') as file:
-                file.write(response.content)
-        except (PermissionError, OSError, IOError) as error:
-            return str(error), error_status
-    return success_message, ok_status
+        with open(base_path, 'wb') as file:
+            file.write(response.content)
+    return

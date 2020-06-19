@@ -4,22 +4,37 @@ include:
   - "http://download.repo.tds/ci/templates-servers-task.yml"
 
 stages:
-  - build
-  - publish
+  - build-dev
+  - publish-dev
+  - build-prod
+  - publish-prod
 
-build-arch:
+build-dev-arch:
   extends: .build_dev_python_arch
-  stage: build
+  stage: build-dev
   variables:
-    IMAGE_PATH: "archlinux:generic-python-builder"
+    IMAGE_PATH: "archlinux:teldrassil"
   allow_failure: true
 
-publish-arch:
+publish-dev-arch:
   extends: .publish_dev_arch_pkg
-  stage: publish
+  stage: publish-dev
+  dependencies:
+    - build-dev-arch
+
+build-prod-arch:
+  extends: .build_prod_python_arch
+  stage: build-prod
+  variables:
+    IMAGE_PATH: "archlinux:teldrassil"
+  allow_failure: true
+
+publish-prod-arch:
+  extends: .publish_stage_arch_pkg
+  stage: publish-prod
   script:
     - curl -f -X POST -F "package=@`ls build/arch/*.pkg.tar.xz`" "http://mandragora-${REPO_ENV}.repo.tds/custom/upload?res_deps="
   variables:
     REPO_ENV: dev
   dependencies:
-    - build-arch
+    - build-dev-arch

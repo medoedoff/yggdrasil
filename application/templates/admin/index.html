@@ -1,0 +1,64 @@
+{% extends 'admin/master.html' %}
+
+{% block head_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="col-md-12" style="border-bottom: 1px solid darkgray">
+        <h2 style="margin: 10px 0 10px 0"> {{ data.full_name }} </h2>
+    </div>
+
+    <div class="col-md-12">
+        <h3 class="h3">Add new Token</h3>
+    </div>
+    <div class="col-md-12" style="margin: 20px 20px"></div>
+    <div class="col-md-12">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group create-token-form">
+                <input class="form-control" type="text" name="name" required="required" placeholder="Name">
+            </div>
+            <div class="form-group create-token-form" style="margin-left: 20px">
+                <textarea class="form-control" rows="3" name="description" placeholder="Description"></textarea>
+            </div>
+            <div class="form-group create-token-form" style="margin-left: 20px">
+                <button class="button" type="submit" name="action" value="create">create</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-12" style="margin: 20px 20px"></div>
+    <div class="col-md-12">
+        <h3 class="h3">Existence Tokens</h3>
+    </div>
+    <div class="col-md-12" style="margin: 20px 20px"></div>
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Token id</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Descriptions</th>
+                    <th scope="col">Authorized at</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for key, value in data.auth_tokens.items() %}
+                <tr>
+                <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% for inner_key, inner_value in value.items() %}
+                    <td style="vertical-align: middle">
+                        <input type="hidden" name="{{ inner_key }}" value="{{ inner_value }}">{{ inner_value }}
+                    </td>
+                    {% endfor %}
+                    <td><button type="submit" class="button" name="action" value="revoke">revoke</button></td>
+                </form>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

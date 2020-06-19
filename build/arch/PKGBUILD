@@ -27,4 +27,5 @@ package() {
 	find $source -mindepth 1 -maxdepth 1 -not -path "$source/build" -not -path "$source/.git" \
 	    -not -path "$source/.gitlab-ci.yml" -not -path "$source/.gitignore" -type d -exec cp -r {} $maindir/ \;
 	cp $source/*.py $maindir
+	cp $source/logging.cfg $maindir
 }

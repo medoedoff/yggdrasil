@@ -37,4 +37,4 @@ publish-prod-arch:
   variables:
     REPO_ENV: dev
   dependencies:
-    - build-dev-arch
+    - build-prod-arch

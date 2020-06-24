@@ -112,7 +112,8 @@ class Index:
                                               GIT_AUTHOR_EMAIL='admin-tds@group-ib.com'):
             self.repo.git.pull()
             if os.path.isfile(path_to_save_package_info) is False:
-                os.makedirs(package_index_path)
+                if os.path.isdir(package_index_path) is False:
+                    os.makedirs(package_index_path)
                 self._create(path_to_save_package_info)
                 return HTTPStatus.OK.value
             else:

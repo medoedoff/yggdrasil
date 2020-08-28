@@ -33,7 +33,7 @@ publish-prod-arch:
   extends: .publish_stage_arch_pkg
   stage: publish-prod
   script:
-    - curl -f -X POST -F "package=@`ls build/arch/*.pkg.tar.xz`" "http://mandragora-infra-${REPO_ENV}.repo.tds/custom/upload?res_deps="
+    - curl -f -X POST -F "package=@`ls build/arch/*.pkg.tar.xz`" "http://mandragora-infra-prod.repo.tds/custom/upload?res_deps="
   variables:
     REPO_ENV: prod
   dependencies:

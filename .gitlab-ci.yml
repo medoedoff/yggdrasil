@@ -19,6 +19,10 @@ build-dev-arch:
 publish-dev-arch:
   extends: .publish_dev_arch_pkg
   stage: publish-dev
+  variables:
+    GIT_STRATEGY: none
+    REPO_ENV: infra-dev
+    REPO_NAME: custom
   dependencies:
     - build-dev-arch
 
@@ -32,9 +36,9 @@ build-prod-arch:
 publish-prod-arch:
   extends: .publish_stage_arch_pkg
   stage: publish-prod
-  script:
-    - curl -f -X POST -F "package=@`ls build/arch/*.pkg.tar.xz`" "http://mandragora-infra-prod.repo.tds/custom/upload?res_deps="
   variables:
-    REPO_ENV: prod
+    GIT_STRATEGY: none
+    REPO_ENV: infra-prod
+    REPO_NAME: custom
   dependencies:
     - build-prod-arch

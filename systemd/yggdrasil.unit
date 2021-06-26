@@ -1,0 +1,24 @@
+[Unit]
+Description=Yggdrasil service
+After=syslog.target
+# Uncomment it if you are using postgresql as database for this app
+# After=postgresql.service
+StartLimitBurst=13
+StartLimitIntervalSec=60
+
+[Service]
+Type=notify
+User=yggdrasil
+Group=yggdrasil
+PIDFile=/var/tmp/yggdrasil.pid
+ExecStart=/usr/bin/uwsgi --ini /opt/registry/yggdrasil/yggdrasil.ini
+ExecReload=/bin/kill -HUP ${MAINPID}
+Restart=on-failure
+RestartSec=5s
+KillSignal=SIGQUIT
+StandardOutput=null
+StandardError=journal
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

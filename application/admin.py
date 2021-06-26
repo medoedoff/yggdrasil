@@ -11,7 +11,7 @@ from flask import redirect, url_for, request
 from .utils import password_validation, email_validation, db, gen_token_payload, gen_public_id
 from .models import Tokens, BlacklistedTokens, Users
 
-admin = Admin(name='GIB-Teldrassil', template_mode='bootstrap3')
+admin = Admin(name='Yggdrasil', template_mode='bootstrap3')
 jwt = JWTManager()
 
 
